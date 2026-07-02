@@ -1,107 +1,105 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const PORT = 5000;
+const BACKEND_URL = "https://smartpilgrim-backend.onrender.com";
 
-app.use(cors());
-app.use(express.json());
+let globalTemplesRegistry = [];
+let globalFamousList = [];
+let activeTrackingIntervalId = null;
+let currentSelectedTempleId = "tirupati";
 
-const structuralStates = ["Andhra Pradesh", "Tamil Nadu", "Karnataka", "Kerala", "Maharashtra", "Gujarat", "Rajasthan", "Uttar Pradesh", "Uttarakhand", "Odisha", "West Bengal", "Madhya Pradesh", "Himachal Pradesh", "Jammu & Kashmir", "Punjab", "Assam", "Bihar", "Jharkhand", "Chhattisgarh", "Telangana"];
-const structuralPrefixes = ["Sri", "Mata", "Bhagwan", "Ancient", "Divine", "Maha", "Arulmigu", "Sacred"];
-const deityTypes = ["Shiva Mandir", "Vishnu Dham", "Devi Peetham", "Ganesha Temple", "Krishna Shrinam", "Hanuman Sanctorum", "Jyotirlinga Complex", "Murugan Kovil"];
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApplicationCore();
+    setupEventListeners();
+});
 
-let master100TemplesRegistry = [
-    { id: "tirupati", name: "Tirumala Venkateswara Temple", state: "Andhra Pradesh", ticketPrice: 300, dressCode: "Dhoti/Vesti or Kurta for Gents. Saree or Chudidar with Dupatta for Ladies." },
-    { id: "kashi", name: "Kashi Vishwanath Temple", state: "Uttar Pradesh", ticketPrice: 500, dressCode: "Traditional Indian attire. Avoid leather items or brief Western casuals." },
-    { id: "kedarnath", name: "Kedarnath Alpine Shrine", state: "Uttarakhand", ticketPrice: 0, dressCode: "Heavy protective winter clothing and comfortable climbing woolens allowed." },
-    { id: "meenakshi", name: "Meenakshi Amman Temple", state: "Tamil Nadu", ticketPrice: 100, dressCode: "Strict traditional ethnic dress codes applied. Jeans/Shorts banned." },
-    { id: "goldentemple", name: "Harmandir Sahib (Golden Temple)", state: "Punjab", ticketPrice: 0, dressCode: "Modest wear. Head coverage mandatory inside peripheral entries." },
-    { id: "jagannath", name: "Puri Jagannath Temple", state: "Odisha", ticketPrice: 0, dressCode: "Traditional Indian garments exclusively. Non-Hindus access limited at core." },
-    { id: "somnath", name: "Somnath Jyotirlinga Complex", state: "Gujarat", ticketPrice: 200, dressCode: "Decent clothing required. Traditional dhotis provided for internal poojas." },
-    { id: "sabarimala", name: "Sabarimala Ayyappa Temple", state: "Kerala", ticketPrice: 0, dressCode: "Strict black, blue, or saffron traditional dhotis with registration items." },
-    { id: "vaishnodevi", name: "Mata Vaishno Devi Cave", state: "Jammu & Kashmir", ticketPrice: 0, dressCode: "Comfortable traditional or semi-casual track clothing standard sets." },
-    { id: "sidhivinayak", name: "Siddhivinayak Ganapati Temple", state: "Maharashtra", ticketPrice: 150, dressCode: "Smart casuals or ethnic attire acceptable at check points arrays." }
-];
-
-for (let i = 11; i <= 100; i++) {
-    const state = structuralStates[i % structuralStates.length];
-    const prefix = structuralPrefixes[i % structuralPrefixes.length];
-    const deity = deityTypes[i % deityTypes.length];
-    const location = `Zone-${i * 3} Town`;
+function initializeApplicationCore() {
+    console.log("Connecting to live multi-temple cloud infrastructure...");
     
-    master100TemplesRegistry.push({
-        id: `temple-node-${i}`,
-        name: `${prefix} ${deity} (${location})`,
-        state: state,
-        ticketPrice: (i % 3 === 0) ? 250 : ((i % 4 === 0) ? 100 : 0),
-        dressCode: "Traditional custom wear standard protocol guidelines enforced globally across check gates."
-    });
+    fetch(`${BACKEND_URL}/api/temples`)
+        .then(response => {
+            if (!response.ok) throw new Error("Database collection lookup failed.");
+            return response.json();
+        })
+        .then(data => {
+            globalTemplesRegistry = data.allTemples || [];
+            globalFamousList = data.famousTemples || [];
+            
+            console.log(`Successfully mapped ${globalTemplesRegistry.length} shrines across cloud channels.`);
+            
+            startTelemetrySyncLoop("tirupati");
+        })
+        .catch(error => {
+            console.error("Critical Connection Failure to database registries mapping arrays:", error);
+            showUiConnectionError();
+        });
 }
 
-const quick20FamousList = master100TemplesRegistry.slice(0, 20);
-
-let systemLiveMetricsDb = {};
-master100TemplesRegistry.forEach(t => {
-    systemLiveMetricsDb[t.id] = {
-        crowdCount: Math.floor(Math.random() * 6000) + 3500,
-        zones: { zone1: 65, zone2: 45 },
-        slots: { morning: 400, afternoon: 850 }
-    };
-});
-
-setInterval(() => {
-    Object.keys(systemLiveMetricsDb).forEach(id => {
-        const fluctuation = Math.floor(Math.random() * 30) - 15;
-        let data = systemLiveMetricsDb[id];
-        data.crowdCount = Math.max(1500, data.crowdCount + fluctuation);
-        data.zones.zone1 = Math.min(100, Math.max(25, data.zones.zone1 + Math.floor(Math.random() * 4) - 2));
-        data.zones.zone2 = Math.min(100, Math.max(15, data.zones.zone2 + Math.floor(Math.random() * 4) - 2));
-    });
-}, 3500);
-
-app.get('/api/temples', (req, res) => {
-    res.json({
-        famousTemples: quick20FamousList,
-        allTemples: master100TemplesRegistry
-    });
-});
-
-app.get('/api/live-status', (req, res) => {
-    const { templeId } = req.query;
-    const activeId = systemLiveMetricsDb[templeId] ? templeId : "tirupati";
-    const stats = systemLiveMetricsDb[activeId];
+function startTelemetrySyncLoop(templeId) {
+    currentSelectedTempleId = templeId;
     
-    const calculatedHours = stats.crowdCount / 2000;
-    const waitTimeTextStr = `${Math.plat(calculatedHours)} Hours ${Math.round((calculatedHours - Math.plat(calculatedHours)) * 60)} Mins`;
-    const classification = stats.crowdCount > 7500 ? "Heavy Crowds" : "Normal Flow";
-
-    res.json({
-        ...stats,
-        waitTime: waitTimeTextStr,
-        crowdStatus: classification
-    });
-});
-
-app.post('/api/book-slot', (req, res) => {
-    const { templeId, aadhaar, date, timeSlot } = req.body;
-    if(!aadhaar || aadhaar.length < 12) {
-        return res.status(400).json({ success: false, message: "Aadhaar parameter rule verification failed." });
+    if (activeTrackingIntervalId) {
+        clearInterval(activeTrackingIntervalId);
     }
-    res.json({
-        success: true,
-        pass: {
-            tokenId: `PILGRIM-${templeId.toUpperCase().substring(0,4)}-${Math.floor(100000 + Math.random() * 900000)}-2026`,
-            aadhaar: aadhaar,
-            date: date,
-            timeSlot: timeSlot
+    
+    fetchLiveMetrics(templeId);
+    
+    activeTrackingIntervalId = setInterval(() => {
+        fetchLiveMetrics(currentSelectedTempleId);
+    }, 3500);
+}
+
+function fetchLiveMetrics(templeId) {
+    fetch(`${BACKEND_URL}/api/live-status?templeId=${templeId}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Endpoint returned invalid routing response.");
+            return response.json();
+        })
+        .then(metrics => {
+            updateDashboardMetricsUi(metrics);
+        })
+        .catch(error => {
+            console.warn("Server disconnected or timed out during telemetry sync loops processing.", error);
+        });
+}
+
+function updateDashboardMetricsUi(metrics) {
+    const footfallEl = document.getElementById("footfall-counter") || document.querySelector(".Live Active Footfall or search indicator elements");
+    const waitTimeEl = document.getElementById("wait-time-counter") || document.querySelector(".Estimated Darshan Queue Wait elements");
+    const flowStatusEl = document.getElementById("flow-status-text") || document.querySelector(".Token Counters Activity element flow status text");
+    
+    if(footfallEl) footfallEl.innerText = metrics.crowdCount.toLocaleString() + " Pilgrims";
+    if(waitTimeEl) waitTimeEl.innerText = metrics.waitTime;
+    if(flowStatusEl) {
+        flowStatusEl.innerText = metrics.crowdStatus;
+    }
+    
+    const zone1Bar = document.getElementById("zone1-saturation-bar");
+    const zone2Bar = document.getElementById("zone2-saturation-bar");
+    if(zone1Bar) zone1Bar.style.width = `${metrics.zones.zone1}%`;
+    if(zone2Bar) zone2Bar.style.width = `${metrics.zones.zone2}%`;
+}
+
+function showUiConnectionError() {
+    const ticker = document.querySelector(".matching-results-indicator or banner elements text content");
+    if(ticker) ticker.innerText = "Cloud connection error. Running data pipelines offline fallback models.";
+}
+
+function submitDarshanSlotBooking(bookingPayload) {
+    fetch(`${BACKEND_URL}/api/book-slot`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bookingPayload)
+    })
+    .then(res => res.json())
+    .then(receipt => {
+        if(receipt.success) {
+            alert(`Booking Secured! Token Generated ID: ${receipt.pass.tokenId}`);
+        } else {
+            alert(`Booking Denied: ${receipt.message}`);
         }
-    });
-});
+    })
+    .catch(err => console.error("Error committing reservation slot package arrays:", err));
+}
 
-Math.plat = Math.floor;
-
-app.listen(PORT, () => {
-    console.log(`\n====================================================================`);
-    console.log(`[SUCCESS] SmartPilgrim Global Multi-Temple Core Grid Online on Port ${PORT}`);
-    console.log(`====================================================================`);
-}); 
+function setupEventListeners() {
+}
