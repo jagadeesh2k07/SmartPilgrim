@@ -1,9 +1,4 @@
-/**
- * SmartPilgrim Interactive Core Engine Application Architecture Script File
- * Integrates Topbar Dropdown Menus and Dynamically populates results arrays
- */
-
-const BACKEND_URL = "http://localhost:5000/api";
+const BACKEND_URL = "https://smartpilgrim-backend.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
     SmartPilgrimApp.init();
@@ -13,14 +8,13 @@ const SmartPilgrimApp = {
     selectedDate: "30th July 2026",
     selectedTime: "Morning Quota (06:00 AM - 12:00 PM)",
     currentTempleId: "tirupati",
-    allTemplesList: [],       // Holds full 100 master records
-    famousTemplesList: [],    // Holds the top 20 quick options
+    allTemplesList: [],
+    famousTemplesList: [],
 
     init: async function() {
         this.bindTabNavigationEvents();
         await this.loadMasterTempleData();
         
-        // Connect system polling update arrays channels loops 
         this.fetchLiveServerTelemetry();
         setInterval(() => this.fetchLiveServerTelemetry(), 3000);
     },
@@ -43,7 +37,6 @@ const SmartPilgrimApp = {
         });
     },
 
-    // Load massive 100-node matrix from server endpoints parameters
     loadMasterTempleData: async function() {
         try {
             const response = await fetch(`${BACKEND_URL}/temples`);
@@ -52,19 +45,16 @@ const SmartPilgrimApp = {
             this.allTemplesList = data.allTemples;
             this.famousTemplesList = data.famousTemples;
 
-            // Initialize default startup view with Tirupathi configuration context parameters
             this.switchTempleDataContext("tirupati");
         } catch (err) {
             console.error("Critical Connection Failure to database registries mapping arrays:", err);
         }
     },
 
-    // Interactive Core Dropdown Event Hooks Triggers
     showSearchDropdown: function() {
         const dropdown = document.getElementById('search-dropdown-menu');
         dropdown.classList.remove('hidden');
         
-        // If input box is empty, render the 20 famous shrines list right away
         const searchInput = document.getElementById('global-temple-search').value.trim();
         if (searchInput === "") {
             this.renderDropdownNodes(this.famousTemplesList, "20 Famous Indian Temples (Quick Menu)");
@@ -72,7 +62,6 @@ const SmartPilgrimApp = {
     },
 
     hideSearchDropdown: function() {
-        // Delayed closure context so click triggers bubble down correctly to register selection events
         setTimeout(() => {
             document.getElementById('search-dropdown-menu').classList.add('hidden');
         }, 250);
@@ -87,7 +76,6 @@ const SmartPilgrimApp = {
             return;
         }
 
-        // Search algorithm checking match factors within 100 entries array database records
         const matchingResults = this.allTemplesList.filter(temple => 
             temple.name.toLowerCase().includes(queryStr) || 
             temple.state.toLowerCase().includes(queryStr)
@@ -124,7 +112,6 @@ const SmartPilgrimApp = {
     selectTempleDropdownItem: function(id) {
         this.switchTempleDataContext(id);
         
-        // Clear value strings out back down normal state configurations
         const selectedTemple = this.allTemplesList.find(t => t.id === id);
         if (selectedTemple) {
             document.getElementById('global-temple-search').value = selectedTemple.name;
@@ -136,7 +123,6 @@ const SmartPilgrimApp = {
         const target = this.allTemplesList.find(t => t.id === id);
         if (!target) return;
 
-        // Reactive Dashboard Core Mapping UI text adjustments outputs
         document.getElementById('display-temple-title').innerText = target.name;
         document.getElementById('display-temple-state').innerText = target.state;
         document.getElementById('display-temple-desc').innerText = `Live edge analytics framework computing server parameters variables monitoring structures layout dynamically for ${target.name}. Check available quota patterns instantly below.`;
@@ -147,7 +133,7 @@ const SmartPilgrimApp = {
         document.getElementById('receipt-price').innerText = `₹${target.ticketPrice}.00`;
         document.getElementById('adv-dress').innerText = target.dressCode;
 
-        this.fetchLiveServerTelemetry(); // Force immediate background context calculation redraw
+        this.fetchLiveServerTelemetry();
     },
 
     fetchLiveServerTelemetry: async function() {

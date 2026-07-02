@@ -13,7 +13,6 @@
 <body>
 
     <div class="app-container">
-        <!-- Sidebar Navigation (Search completely removed from here) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="sacred-emblem"><i class="fa-solid fa-gopuram"></i></div>
@@ -46,23 +45,18 @@
             </div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="main-viewport">
-            <!-- Global Top Bar with Embedded Smart Search Engine -->
             <header class="topbar">
                 
-                <!-- NEW: Relocated and Upgraded Search Component Matrix -->
                 <div class="global-search-container">
                     <div class="search-input-frame">
                         <i class="fa-solid fa-magnifying-glass main-search-icon"></i>
                         <input type="text" id="global-temple-search" placeholder="Search 100+ Holy Shrines across India..." onfocus="SmartPilgrimApp.showSearchDropdown()" onblur="SmartPilgrimApp.hideSearchDropdown()" onkeyup="SmartPilgrimApp.processSearchQuery()">
                     </div>
                     
-                    <!-- Floating Quick Select & Live Filtering Popover Dropdown Menu -->
                     <div class="search-dropdown hidden" id="search-dropdown-menu">
                         <div class="dropdown-header" id="dropdown-menu-title">20 Famous Indian Temples (Quick Menu)</div>
                         <div class="dropdown-scroll-stack" id="dropdown-results-container">
-                            <!-- Populated dynamically via JS engine hooks -->
                         </div>
                     </div>
                 </div>
@@ -76,16 +70,13 @@
                 </div>
             </header>
 
-            <!-- Main Scroll View Content Workspace -->
             <div class="scrollable-content">
                 
-                <!-- System Announcement Marquee Banner Block -->
                 <div class="system-announcement">
                     <i class="fa-solid fa-circle-exclamation amber-text"></i>
                     <marquee behavior="scroll" direction="left" id="live-ticker-banner">Select a temple to display active real-time ticker data streams...</marquee>
                 </div>
 
-                <!-- TAB 1: LIVE STATUS VIEW -->
                 <section id="live-status" class="tab-panel active">
                     <div class="dashboard-banner">
                         <span class="banner-tag" id="display-temple-state">Andhra Pradesh</span>
@@ -137,7 +128,6 @@
                     </div>
                 </section>
 
-                <!-- TAB 2: INTERACTIVE SLOT BOOKING SECTION -->
                 <section id="slot-booking" class="tab-panel">
                     <div class="section-heading">
                         <h2>Secure Pass Allocation Engine (<span id="display-booking-price">₹300</span>)</h2>
@@ -184,7 +174,6 @@
                     </div>
                 </section>
 
-                <!-- TAB 3: PASSPORT TOKENS VIEW -->
                 <section id="my-tokens" class="tab-panel">
                     <div class="section-heading">
                         <h2>Cryptographic Verification Passes</h2>
@@ -215,7 +204,6 @@
                     </div>
                 </section>
 
-                <!-- TAB 4: SYSTEM CUSTOM ADVISORY -->
                 <section id="travel-advisory" class="tab-panel">
                     <div class="section-heading">
                         <h2>Customized Local Shrine Travel Directives</h2>

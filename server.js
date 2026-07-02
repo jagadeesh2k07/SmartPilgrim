@@ -6,12 +6,10 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// 1. Defining standard famous templates configuration frameworks components
 const structuralStates = ["Andhra Pradesh", "Tamil Nadu", "Karnataka", "Kerala", "Maharashtra", "Gujarat", "Rajasthan", "Uttar Pradesh", "Uttarakhand", "Odisha", "West Bengal", "Madhya Pradesh", "Himachal Pradesh", "Jammu & Kashmir", "Punjab", "Assam", "Bihar", "Jharkhand", "Chhattisgarh", "Telangana"];
 const structuralPrefixes = ["Sri", "Mata", "Bhagwan", "Ancient", "Divine", "Maha", "Arulmigu", "Sacred"];
 const deityTypes = ["Shiva Mandir", "Vishnu Dham", "Devi Peetham", "Ganesha Temple", "Krishna Shrinam", "Hanuman Sanctorum", "Jyotirlinga Complex", "Murugan Kovil"];
 
-// Initialize 100 core items database programmatic generation arrays
 let master100TemplesRegistry = [
     { id: "tirupati", name: "Tirumala Venkateswara Temple", state: "Andhra Pradesh", ticketPrice: 300, dressCode: "Dhoti/Vesti or Kurta for Gents. Saree or Chudidar with Dupatta for Ladies." },
     { id: "kashi", name: "Kashi Vishwanath Temple", state: "Uttar Pradesh", ticketPrice: 500, dressCode: "Traditional Indian attire. Avoid leather items or brief Western casuals." },
@@ -25,7 +23,6 @@ let master100TemplesRegistry = [
     { id: "sidhivinayak", name: "Siddhivinayak Ganapati Temple", state: "Maharashtra", ticketPrice: 150, dressCode: "Smart casuals or ethnic attire acceptable at check points arrays." }
 ];
 
-// Loop populate up to 100 entries automatically matching user conditions
 for (let i = 11; i <= 100; i++) {
     const state = structuralStates[i % structuralStates.length];
     const prefix = structuralPrefixes[i % structuralPrefixes.length];
@@ -41,10 +38,8 @@ for (let i = 11; i <= 100; i++) {
     });
 }
 
-// Slice first 20 as the "Most Famous Shrines" Quick Menu Array List
 const quick20FamousList = master100TemplesRegistry.slice(0, 20);
 
-// Initialize live memory matrices configuration states parameters across array registries
 let systemLiveMetricsDb = {};
 master100TemplesRegistry.forEach(t => {
     systemLiveMetricsDb[t.id] = {
@@ -54,7 +49,6 @@ master100TemplesRegistry.forEach(t => {
     };
 });
 
-// AI Simulation processing metrics variables variations shifts
 setInterval(() => {
     Object.keys(systemLiveMetricsDb).forEach(id => {
         const fluctuation = Math.floor(Math.random() * 30) - 15;
@@ -65,7 +59,6 @@ setInterval(() => {
     });
 }, 3500);
 
-// API Endpoints Mapping Setup Routes
 app.get('/api/temples', (req, res) => {
     res.json({
         famousTemples: quick20FamousList,
@@ -105,7 +98,6 @@ app.post('/api/book-slot', (req, res) => {
     });
 });
 
-// Fallback Math alias layout fix rules
 Math.plat = Math.floor;
 
 app.listen(PORT, () => {

@@ -6,9 +6,8 @@
   "name": "smartpilgrim",
   "version": "1.0.0",
   "description": "The **Smart Pilgrim App** is an integrated mana gement solution designed to streamline temple visits, reduce overcrowding through real-time AI analytics, and digitize the darshan slot booking process. Developed for the Smart India Hackathon 2025, this project aims to enhance pilgrim experience and help temple authorities manage crowd flow efficiently.",
-  "main": "script.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "repository": {
