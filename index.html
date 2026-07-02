@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPilgrim - Unified Devotional Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation (Search completely removed from here) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sacred-emblem"><i class="fa-solid fa-gopuram"></i></div>
+                <div class="brand-titles">
+                    <h2>SmartPilgrim</h2>
+                    <span>ALL-INDIA DEVOSTHANAM HUB</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li class="menu-item active" data-tab="live-status">
+                        <a href="#live"><i class="fa-solid fa-chart-line"></i> Live Metrics Hub</a>
+                    </li>
+                    <li class="menu-item" data-tab="slot-booking">
+                        <a href="#book"><i class="fa-solid fa-ticket"></i> Darshan & Pooja Slots</a>
+                    </li>
+                    <li class="menu-item" data-tab="my-tokens">
+                        <a href="#tokens"><i class="fa-solid fa-qrcode"></i> Digital Pilgrimage Passes</a>
+                    </li>
+                    <li class="menu-item" data-tab="travel-advisory">
+                        <a href="#advisory"><i class="fa-solid fa-shield-halved"></i> Temple Custom Guidelines</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="indicator-glow green"></span>
+                <p>Central Cloud Sync Active</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-viewport">
+            <!-- Global Top Bar with Embedded Smart Search Engine -->
+            <header class="topbar">
+                
+                <!-- NEW: Relocated and Upgraded Search Component Matrix -->
+                <div class="global-search-container">
+                    <div class="search-input-frame">
+                        <i class="fa-solid fa-magnifying-glass main-search-icon"></i>
+                        <input type="text" id="global-temple-search" placeholder="Search 100+ Holy Shrines across India..." onfocus="SmartPilgrimApp.showSearchDropdown()" onblur="SmartPilgrimApp.hideSearchDropdown()" onkeyup="SmartPilgrimApp.processSearchQuery()">
+                    </div>
+                    
+                    <!-- Floating Quick Select & Live Filtering Popover Dropdown Menu -->
+                    <div class="search-dropdown hidden" id="search-dropdown-menu">
+                        <div class="dropdown-header" id="dropdown-menu-title">20 Famous Indian Temples (Quick Menu)</div>
+                        <div class="dropdown-scroll-stack" id="dropdown-results-container">
+                            <!-- Populated dynamically via JS engine hooks -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-cluster">
+                    <div class="notification-bell"><i class="fa-solid fa-bell"></i><span class="badge"></span></div>
+                    <div class="user-info">
+                        <div class="user-avatar">J</div>
+                        <span>Jagadeesh</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Scroll View Content Workspace -->
+            <div class="scrollable-content">
+                
+                <!-- System Announcement Marquee Banner Block -->
+                <div class="system-announcement">
+                    <i class="fa-solid fa-circle-exclamation amber-text"></i>
+                    <marquee behavior="scroll" direction="left" id="live-ticker-banner">Select a temple to display active real-time ticker data streams...</marquee>
+                </div>
+
+                <!-- TAB 1: LIVE STATUS VIEW -->
+                <section id="live-status" class="tab-panel active">
+                    <div class="dashboard-banner">
+                        <span class="banner-tag" id="display-temple-state">Andhra Pradesh</span>
+                        <h1 id="display-temple-title">Tirumala Venkateswara Temple</h1>
+                        <p id="display-temple-desc">Verify live tracking infrastructure index counters, AI crowd density analysis formulas, and queue line wait configurations metrics immediately.</p>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="stat-card">
+                            <div class="card-top"><span>Live Active Footfall</span><div class="icon-frame red"><i class="fa-solid fa-users"></i></div></div>
+                            <div class="card-bottom">
+                                <h2 id="live-crowd-count">--</h2>
+                                <p class="status-pill state-heavy" id="crowd-badge">Analysis Pending</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="card-top"><span>Estimated Darshan Queue Wait</span><div class="icon-frame orange"><i class="fa-solid fa-hourglass-half"></i></div></div>
+                            <div class="card-bottom">
+                                <h2 id="live-wait-time">--</h2>
+                                <p class="status-pill state-moving">Dynamically Calculated</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="card-top"><span>Token Counters Activity</span><div class="icon-frame green"><i class="fa-solid fa-network-wired"></i></div></div>
+                            <div class="card-bottom">
+                                <h2 id="live-token-processing">Normal Flow</h2>
+                                <p class="status-text"><i class="fa-solid fa-check-double"></i> All Gates Operational</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="density-panel">
+                        <div class="panel-title">
+                            <h3>Zone Cluster Saturation Indicators</h3>
+                            <p>Telemetry processing from edge automation modules tracking inner and outer prakarams</p>
+                        </div>
+                        <div class="zone-bars-stack">
+                            <div class="zone-row">
+                                <div class="zone-labels"><span>Main Entry Checkpoint Matrix</span><strong id="bar-val-1">--%</strong></div>
+                                <div class="bar-bg"><div class="bar-fill bg-danger" id="bar-fill-1" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="zone-row">
+                                <div class="zone-labels"><span>Inner Core Sanctorum (Garbhagriha Perimeter)</span><strong id="bar-val-2">--%</strong></div>
+                                <div class="bar-bg"><div class="bar-fill bg-success" id="bar-fill-2" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: INTERACTIVE SLOT BOOKING SECTION -->
+                <section id="slot-booking" class="tab-panel">
+                    <div class="section-heading">
+                        <h2>Secure Pass Allocation Engine (<span id="display-booking-price">₹300</span>)</h2>
+                        <p>Select your desired date block and reservation window down below. Server values refresh instantly.</p>
+                    </div>
+
+                    <div class="booking-flow-grid">
+                        <div class="booking-form-box">
+                            <h3>1. Select Date Calendar</h3>
+                            <div class="calendar-mock">
+                                <div class="calendar-day disabled">28<br><small>Full</small></div>
+                                <div class="calendar-day disabled">29<br><small>Full</small></div>
+                                <div class="calendar-day active" onclick="SmartPilgrimApp.selectBookingDate(30)">30<br><small class="text-green">Available</small></div>
+                                <div class="calendar-day" onclick="SmartPilgrimApp.selectBookingDate(1)">01<br><small class="text-green">Available</small></div>
+                                <div class="calendar-day" onclick="SmartPilgrimApp.selectBookingDate(2)">02<br><small class="text-orange">Limited</small></div>
+                            </div>
+
+                            <h3 class="margin-top-md">2. Select Your Time Window</h3>
+                            <div class="time-slots-grid">
+                                <div class="slot-tile selected" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Morning Quota (06:00 AM - 12:00 PM)')">
+                                    <span>Morning Session</span><h4>06:00 AM</h4><p id="quota-s1">-- Slots Left</p>
+                                </div>
+                                <div class="slot-tile" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Afternoon Quota (12:00 PM - 06:00 PM)')">
+                                    <span>Afternoon Session</span><h4>12:00 PM</h4><p id="quota-s2">-- Slots Left</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-sidebar">
+                            <h3>Booking Parameters Verified</h3>
+                            <div class="checkout-card">
+                                <div class="receipt-row"><span>Target Shrine:</span><strong id="receipt-temple">Tirumala</strong></div>
+                                <div class="receipt-row"><span>Selected Target Date:</span><strong id="receipt-date">30th July 2026</strong></div>
+                                <div class="receipt-row"><span>Time Window Band:</span><strong id="receipt-time">Morning Quota</strong></div>
+                                <div class="receipt-row"><span>Gate Charge Toll:</span><strong class="gold-text" id="receipt-price">₹300.00</strong></div>
+                                
+                                <div class="pilgrim-input-field">
+                                    <label for="pilgrim-id">Primary Pilgrim Aadhaar Identifier Key:</label>
+                                    <input type="text" id="pilgrim-id" placeholder="Ex: 4520 8921 4410" maxlength="14">
+                                </div>
+                                <button class="btn btn-primary-gold" onclick="SmartPilgrimApp.executeLiveServerBooking()"><i class="fa-solid fa-shield-gold"></i> Complete Core Registration</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: PASSPORT TOKENS VIEW -->
+                <section id="my-tokens" class="tab-panel">
+                    <div class="section-heading">
+                        <h2>Cryptographic Verification Passes</h2>
+                        <p>Present this live system pass to security enforcement terminals upon arriving at access lanes.</p>
+                    </div>
+                    <div id="no-tickets-fallback" class="empty-state-card">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <h3>No Active Passes Compiled Currently</h3>
+                        <p>Please select a temple destination from the directory tree database and execute a booking pass sequence.</p>
+                    </div>
+                    <div id="ticket-pass-container" class="digital-ticket-container hidden">
+                        <div class="ticket-wrapper">
+                            <div class="ticket-left">
+                                <div class="ticket-badge" id="tkt-badge-title">VIP ACCESS TICKET</div>
+                                <h3 id="tkt-temple-name">Sri Venkateswara Divine Shrine</h3>
+                                <div class="ticket-meta-grid">
+                                    <div class="meta-item"><span>Registered Pilgrim</span><strong>Jagadeesh Prasad</strong></div>
+                                    <div class="meta-item"><span>Identity Verification Checksum</span><strong id="tkt-uid">--</strong></div>
+                                    <div class="meta-item"><span>Scheduled Gate Timing</span><strong id="tkt-window">--</strong></div>
+                                    <div class="meta-item"><span>Terminal Checkpoint Array</span><strong>System Authorized Gate 3A</strong></div>
+                                </div>
+                            </div>
+                            <div class="ticket-right">
+                                <div class="qr-box-mock"><div class="qr-scanner-lines"><i class="fa-solid fa-qrcode"></i></div><span>TOKEN SECURE</span></div>
+                                <p class="token-id-str" id="tkt-token-string">TOKEN_ID: PENDING</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: SYSTEM CUSTOM ADVISORY -->
+                <section id="travel-advisory" class="tab-panel">
+                    <div class="section-heading">
+                        <h2>Customized Local Shrine Travel Directives</h2>
+                        <p>Failure to meet these compliance checks will result in immediate entry denial at checkpoint gates.</p>
+                    </div>
+                    <div class="advisory-grid">
+                        <div class="advisory-card">
+                            <div class="advisory-icon"><i class="fa-solid fa-shirt"></i></div>
+                            <h3>Dress Enforcement Standard</h3>
+                            <p id="adv-dress">Traditional Indian attire is mandatory. Gents must wear dhotis or pyjamas; sarees or chudidars with dupatta for ladies.</p>
+                        </div>
+                        <div class="advisory-card">
+                            <div class="advisory-icon"><i class="fa-solid fa-ban"></i></div>
+                            <h3>Forbidden Electronic Materials</h3>
+                            <p>Mobile recording instruments, electronic wearables, cameras, and memory drives are banned beyond outer checkpoints. Free biometric lockers are available outside.</p>
+                        </div>
+                        <div class="advisory-card">
+                            <div class="advisory-icon"><i class="fa-solid fa-id-card"></i></div>
+                            <h3>Mandatory On-Site Documents</h3>
+                            <p>The original physical Aadhaar ID matching your booking token checksum must be brought. Phone digital copies are rejected inside security bays.</p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-popup" id="app-toast">Operation Successful</div>
+
+</body>
+<script src="script.js"></script>
+</html>
