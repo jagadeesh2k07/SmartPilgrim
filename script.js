@@ -1,223 +1,332 @@
+// ==========================================
+// CENTRAL CLOUD GATEWAY CONFIGURATION
+// ==========================================
 const BACKEND_URL = "https://smartpilgrim-backend.onrender.com";
 
+// Application State Variables
+let globalTemplesRegistry = [];
+let globalFamousList = [];
+let activeTrackingIntervalId = null;
+
+// Global Form Variables
+let selectedDate = "30th July 2026";
+let selectedTimeSlotText = "Morning Quota (06:00 AM - 12:00 PM)";
+let selectedTempleObject = { id: "tirupati", name: "Tirumala Venkateswara Temple", state: "Andhra Pradesh", ticketPrice: 300, dressCode: "Dhoti/Vesti or Kurta for Gents. Saree or Chudidar with Dupatta for Ladies." };
+
+// Initial Bootstrapping
 document.addEventListener('DOMContentLoaded', () => {
-    SmartPilgrimApp.init();
+    SmartPilgrimApp.initializeApplicationCore();
+    SmartPilgrimApp.setupTabNavigation();
 });
 
+// ==========================================
+// MAIN APPLICATION ENGINE INTERFACE
+// ==========================================
 const SmartPilgrimApp = {
-    selectedDate: "30th July 2026",
-    selectedTime: "Morning Quota (06:00 AM - 12:00 PM)",
-    currentTempleId: "tirupati",
-    allTemplesList: [],
-    famousTemplesList: [],
 
-    init: async function() {
-        this.bindTabNavigationEvents();
-        await this.loadMasterTempleData();
+    // 1. Fetch Primary Temple Array Registries
+    initializeApplicationCore: () => {
+        console.log("Connecting to live multi-temple cloud infrastructure...");
         
-        this.fetchLiveServerTelemetry();
-        setInterval(() => this.fetchLiveServerTelemetry(), 3000);
-    },
-
-    bindTabNavigationEvents: function() {
-        const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
-        const panels = document.querySelectorAll('.tab-panel');
-
-        menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                menuItems.forEach(mi => mi.classList.remove('active'));
-                item.classList.add('active');
-
-                const targetTab = item.getAttribute('data-tab');
-                panels.forEach(panel => {
-                    panel.classList.toggle('active', panel.id === targetTab);
-                });
+        fetch(`${BACKEND_URL}/api/temples`)
+            .then(response => {
+                if (!response.ok) throw new Error("Database collection lookup failed.");
+                return response.json();
+            })
+            .then(data => {
+                globalTemplesRegistry = data.allTemples || [];
+                globalFamousList = data.famousTemples || [];
+                
+                console.log(`Successfully mapped ${globalTemplesRegistry.length} shrines across cloud channels.`);
+                
+                // Populate default Quick Menu in search dropdown
+                SmartPilgrimApp.renderDropdownStack(globalFamousList);
+                
+                // Spin up live status metric engine loop for default temple (Tirupati)
+                SmartPilgrimApp.startTelemetrySyncLoop("tirupati");
+            })
+            .catch(error => {
+                console.error("Critical Connection Failure to database registries:", error);
+                const ticker = document.getElementById("live-ticker-banner");
+                if (ticker) ticker.innerText = "Cloud Connection Error. Unable to fetch temple array metrics.";
             });
-        });
     },
 
-    loadMasterTempleData: async function() {
-        try {
-            const response = await fetch(`${BACKEND_URL}/temples`);
-            const data = await response.json();
-            
-            this.allTemplesList = data.allTemples;
-            this.famousTemplesList = data.famousTemples;
-
-            this.switchTempleDataContext("tirupati");
-        } catch (err) {
-            console.error("Critical Connection Failure to database registries mapping arrays:", err);
+    // 2. Real-Time Telemetry Background Sync Loops
+    startTelemetrySyncLoop: (templeId) => {
+        if (activeTrackingIntervalId) {
+            clearInterval(activeTrackingIntervalId);
         }
-    },
-
-    showSearchDropdown: function() {
-        const dropdown = document.getElementById('search-dropdown-menu');
-        dropdown.classList.remove('hidden');
         
-        const searchInput = document.getElementById('global-temple-search').value.trim();
-        if (searchInput === "") {
-            this.renderDropdownNodes(this.famousTemplesList, "20 Famous Indian Temples (Quick Menu)");
-        }
+        SmartPilgrimApp.fetchLiveMetrics(templeId);
+        
+        activeTrackingIntervalId = setInterval(() => {
+            SmartPilgrimApp.fetchLiveMetrics(templeId);
+        }, 3500);
     },
 
-    hideSearchDropdown: function() {
+    fetchLiveMetrics: (templeId) => {
+        fetch(`${BACKEND_URL}/api/live-status?templeId=${templeId}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Endpoint returned invalid routing response.");
+                return response.json();
+            })
+            .then(metrics => {
+                SmartPilgrimApp.updateDashboardMetricsUi(metrics);
+            })
+            .catch(error => {
+                console.warn("Server disconnected or timed out during telemetry sync loops processing.", error);
+            });
+    },
+
+    // 3. Update Dashboard Elements
+    updateDashboardMetricsUi: (metrics) => {
+        const crowdCountEl = document.getElementById("live-crowd-count");
+        const waitTimeEl = document.getElementById("live-wait-time");
+        const tokenProcessingEl = document.getElementById("live-token-processing");
+        const crowdBadge = document.getElementById("crowd-badge");
+        
+        if (crowdCountEl) crowdCountEl.innerText = metrics.crowdCount.toLocaleString();
+        if (waitTimeEl) waitTimeEl.innerText = metrics.waitTime;
+        if (tokenProcessingEl) tokenProcessingEl.innerText = metrics.crowdStatus;
+        
+        if (crowdBadge) {
+            crowdBadge.innerText = metrics.crowdStatus === "Heavy Crowds" ? "🔴 Heavy Crowd Density" : "🟢 Normal Flow";
+            crowdBadge.className = metrics.crowdStatus === "Heavy Crowds" ? "status-pill state-heavy" : "status-pill state-moving";
+        }
+
+        // Zone Fill Bars
+        const barFill1 = document.getElementById("bar-fill-1");
+        const barFill2 = document.getElementById("bar-fill-2");
+        const barVal1 = document.getElementById("bar-val-1");
+        const barVal2 = document.getElementById("bar-val-2");
+
+        if (barFill1 && barVal1) {
+            barFill1.style.width = `${metrics.zones.zone1}%`;
+            barVal1.innerText = `${metrics.zones.zone1}%`;
+        }
+        if (barFill2 && barVal2) {
+            barFill2.style.width = `${metrics.zones.zone2}%`;
+            barVal2.innerText = `${metrics.zones.zone2}%`;
+        }
+
+        // Quota Slot Numbers
+        const quotaS1 = document.getElementById("quota-s1");
+        const quotaS2 = document.getElementById("quota-s2");
+        if (quotaS1) quotaS1.innerText = `${metrics.slots.morning} Slots Left`;
+        if (quotaS2) quotaS2.innerText = `${metrics.slots.afternoon} Slots Left`;
+    },
+
+    // ==========================================
+    // INTERACTIVE LIVE SEARCH COMPONENT LOGIC
+    // ==========================================
+    showSearchDropdown: () => {
+        const dropdown = document.getElementById("search-dropdown-menu");
+        if (dropdown) dropdown.classList.remove("hidden");
+    },
+
+    hideSearchDropdown: () => {
+        // Delayed slightly so clicks on items register before menu vanishes
         setTimeout(() => {
-            document.getElementById('search-dropdown-menu').classList.add('hidden');
+            const dropdown = document.getElementById("search-dropdown-menu");
+            if (dropdown) dropdown.classList.add("hidden");
         }, 250);
     },
 
-    processSearchQuery: function() {
-        const queryStr = document.getElementById('global-temple-search').value.toLowerCase().trim();
-        const menuTitle = document.getElementById('dropdown-menu-title');
+    processSearchQuery: () => {
+        const searchInput = document.getElementById("global-temple-search");
+        const menuTitle = document.getElementById("dropdown-menu-title");
+        
+        if (!searchInput) return;
+        const queryStr = searchInput.value.toLowerCase().trim();
 
         if (queryStr === "") {
-            this.renderDropdownNodes(this.famousTemplesList, "20 Famous Indian Temples (Quick Menu)");
+            if (menuTitle) menuTitle.innerText = "20 Famous Indian Temples (Quick Menu)";
+            SmartPilgrimApp.renderDropdownStack(globalFamousList);
             return;
         }
 
-        const matchingResults = this.allTemplesList.filter(temple => 
+        if (menuTitle) menuTitle.innerText = "Search Results Matrix";
+        
+        const filteredShrines = globalTemplesRegistry.filter(temple => 
             temple.name.toLowerCase().includes(queryStr) || 
             temple.state.toLowerCase().includes(queryStr)
         );
 
-        this.renderDropdownNodes(matchingResults, `Matching Results (${matchingResults.length} Found)`);
+        SmartPilgrimApp.renderDropdownStack(filteredShrines);
     },
 
-    renderDropdownNodes: function(dataset, headerTitleText) {
-        document.getElementById('dropdown-menu-title').innerText = headerTitleText;
-        const container = document.getElementById('dropdown-results-container');
+    renderDropdownStack: (listArray) => {
+        const container = document.getElementById("dropdown-results-container");
+        if (!container) return;
+
         container.innerHTML = "";
 
-        if (dataset.length === 0) {
-            container.innerHTML = `<div style="padding:16px; font-size:12px; color:#8c8282; text-align:center;">No matching shrines found in database collection records indexing indices.</div>`;
+        if (listArray.length === 0) {
+            container.innerHTML = `<div style="padding: 12px; color: #888; font-size: 0.9rem;">No matching shrines found in directory tree data.</div>`;
             return;
         }
 
-        dataset.forEach(temple => {
-            const isActive = temple.id === this.currentTempleId ? "active-selection" : "";
-            const elementHtml = `
-                <div class="dropdown-temple-item ${isActive}" onclick="SmartPilgrimApp.selectTempleDropdownItem('${temple.id}')">
-                    <div class="item-meta">
-                        <h4>${temple.name}</h4>
-                        <span>${temple.state}</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', elementHtml);
+        listArray.slice(0, 10).forEach(temple => {
+            const rowItem = document.createElement("div");
+            rowItem.style.padding = "10px 15px";
+            rowItem.style.cursor = "pointer";
+            rowItem.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            rowItem.style.fontSize = "0.9rem";
+            rowItem.style.color = "#fff";
+            rowItem.innerHTML = `<strong>${temple.name}</strong> <span style="font-size:0.75rem; color:#b08d57; float:right;">${temple.state}</span>`;
+            
+            rowItem.onmousedown = () => {
+                SmartPilgrimApp.selectTempleDestination(temple);
+            };
+
+            container.appendChild(rowItem);
         });
     },
 
-    selectTempleDropdownItem: function(id) {
-        this.switchTempleDataContext(id);
+    selectTempleDestination: (temple) => {
+        selectedTempleObject = temple;
         
-        const selectedTemple = this.allTemplesList.find(t => t.id === id);
-        if (selectedTemple) {
-            document.getElementById('global-temple-search').value = selectedTemple.name;
-        }
+        // Update Search Bar Context
+        const searchInput = document.getElementById("global-temple-search");
+        if (searchInput) searchInput.value = temple.name;
+
+        // Update Dashboard Main Display Titles
+        const displayTitle = document.getElementById("display-temple-title");
+        const displayState = document.getElementById("display-temple-state");
+        const advDress = document.getElementById("adv-dress");
+        const marqueeTicker = document.getElementById("live-ticker-banner");
+
+        if (displayTitle) displayTitle.innerText = temple.name;
+        if (displayState) displayState.innerText = temple.state;
+        if (advDress) advDress.innerText = temple.dressCode || "Traditional Indian clothing parameters apply across checkout gates.";
+        if (marqueeTicker) marqueeTicker.innerText = `Data Streams Active for ${temple.name} (${temple.state}). Verification channels are fully armed.`;
+
+        // Update Booking Section Receipts
+        const displayBookingPrice = document.getElementById("display-booking-price");
+        const receiptTemple = document.getElementById("receipt-temple");
+        const receiptPrice = document.getElementById("receipt-price");
+
+        if (displayBookingPrice) displayBookingPrice.innerText = `₹${temple.ticketPrice}`;
+        if (receiptTemple) receiptTemple.innerText = temple.name;
+        if (receiptPrice) receiptPrice.innerText = `₹${temple.ticketPrice}.00`;
+
+        // Re-align tracking interval network links
+        SmartPilgrimApp.startTelemetrySyncLoop(temple.id);
+        SmartPilgrimApp.showToastNotification(`Switched grid to ${temple.name}`);
     },
 
-    switchTempleDataContext: function(id) {
-        this.currentTempleId = id;
-        const target = this.allTemplesList.find(t => t.id === id);
-        if (!target) return;
-
-        document.getElementById('display-temple-title').innerText = target.name;
-        document.getElementById('display-temple-state').innerText = target.state;
-        document.getElementById('display-temple-desc').innerText = `Live edge analytics framework computing server parameters variables monitoring structures layout dynamically for ${target.name}. Check available quota patterns instantly below.`;
-        document.getElementById('display-booking-price').innerText = `₹${target.ticketPrice}`;
-        document.getElementById('live-ticker-banner').innerText = `ADVISORY COMPLIANCE MATRIX FOR ${target.name.toUpperCase()} -> GUIDELINES DIRECTIVE MANDATE: ${target.dressCode}`;
+    // ==========================================
+    // SLOT SELECTION AND FORM SUBMISSION ENGINE
+    // ==========================================
+    selectBookingDate: (dayNum) => {
+        const monthYearStr = dayNum > 10 ? "th July 2026" : "st August 2026";
+        selectedDate = `${dayNum < 10 ? '0' + dayNum : dayNum}${monthYearStr}`;
         
-        document.getElementById('receipt-temple').innerText = target.name.split(' ')[0];
-        document.getElementById('receipt-price').innerText = `₹${target.ticketPrice}.00`;
-        document.getElementById('adv-dress').innerText = target.dressCode;
+        const receiptDate = document.getElementById("receipt-date");
+        if (receiptDate) receiptDate.innerText = selectedDate;
 
-        this.fetchLiveServerTelemetry();
+        // Toggle visual active tiles
+        const days = document.querySelectorAll(".calendar-day");
+        days.forEach(d => d.classList.remove("active"));
+        event.currentTarget.classList.add("active");
     },
 
-    fetchLiveServerTelemetry: async function() {
-        try {
-            const res = await fetch(`${BACKEND_URL}/live-status?templeId=${this.currentTempleId}`);
-            const data = await res.json();
+    selectTimeSlot: (element, slotString) => {
+        selectedTimeSlotText = slotString;
+        const receiptTime = document.getElementById("receipt-time");
+        if (receiptTime) receiptTime.innerText = slotString.split(' ')[0] + " Quota";
 
-            document.getElementById('live-crowd-count').innerText = data.crowdCount.toLocaleString();
-            document.getElementById('live-wait-time').innerText = data.waitTime;
+        const tiles = document.querySelectorAll(".slot-tile");
+        tiles.forEach(t => t.classList.remove("selected"));
+        element.classList.add("selected");
+    },
 
-            const badge = document.getElementById('crowd-badge');
-            badge.innerText = data.crowdStatus;
-            badge.className = `status-pill ${data.crowdStatus === 'Heavy Crowds' ? 'state-heavy' : 'state-moving'}`;
+    executeLiveServerBooking: () => {
+        const pilgrimInput = document.getElementById("pilgrim-id");
+        if (!pilgrimInput) return;
 
-            this.updateLayoutBar("bar-fill-1", "bar-val-1", data.zones.zone1);
-            this.updateLayoutBar("bar-fill-2", "bar-val-2", data.zones.zone2);
+        const idValue = pilgrimInput.value.replace(/\s+/g, '').trim();
 
-            document.getElementById('quota-s1').innerText = `${data.slots.morning} Slots Left`;
-            document.getElementById('quota-s2').innerText = `${data.slots.afternoon} Slots Left`;
-        } catch (e) {
-            console.warn("Server disconnected or timed out during telemetry sync loops processing.");
+        if (idValue.length < 12) {
+            alert("Security Check Failed: Verification identifier must be at least 12 digits.");
+            return;
         }
-    },
 
-    updateLayoutBar: function(id, textId, value) {
-        const el = document.getElementById(id);
-        if (el) { el.style.width = value + '%'; document.getElementById(textId).innerText = value + '%'; }
-    },
-
-    selectBookingDate: function(day) {
-        this.selectedDate = `${day}th July 2026`;
-        document.getElementById('receipt-date').innerText = this.selectedDate;
-        document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    },
-
-    selectTimeSlot: function(el, str) {
-        document.querySelectorAll('.slot-tile').forEach(t => t.classList.remove('selected'));
-        el.classList.add('selected');
-        this.selectedTime = str;
-        document.getElementById('receipt-time').innerText = this.selectedTime.split(' (')[0];
-    },
-
-    executeLiveServerBooking: async function() {
-        const adharNum = document.getElementById('pilgrim-id').value.trim();
-        if (adharNum.length < 12) { this.showNotificationToast("Error: Validate 12-digit identification payload."); return; }
-
-        const currentActiveTemple = this.allTemplesList.find(t => t.id === this.currentTempleId);
-
-        const payload = {
-            templeId: this.currentTempleId,
-            aadhaar: adharNum,
-            date: this.selectedDate,
-            timeSlot: this.selectedTime
+        const bookingPayload = {
+            templeId: selectedTempleObject.id,
+            aadhaar: idValue, // Passed as standard request variable
+            date: selectedDate,
+            timeSlot: selectedTimeSlotText
         };
 
-        try {
-            const res = await fetch(`${BACKEND_URL}/book-slot`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                document.getElementById('tkt-badge-title').innerText = `${currentActiveTemple.name.toUpperCase()} ACCESS PASS`;
-                document.getElementById('tkt-temple-name').innerText = currentActiveTemple.name;
-                document.getElementById('tkt-uid').innerText = `Aadhaar (${data.pass.aadhaar})`;
-                document.getElementById('tkt-window').innerText = `${data.pass.date} [${data.pass.timeSlot.split(' (')[0]}]`;
-                document.getElementById('tkt-token-string').innerText = `TOKEN_ID: ${data.pass.tokenId}`;
-
-                document.getElementById('no-tickets-fallback').classList.add('hidden');
-                document.getElementById('ticket-pass-container').classList.remove('hidden');
-
-                this.showNotificationToast("Pass Saved on Decentralized Server Stack Successfully!");
-                setTimeout(() => document.querySelector('[data-tab="my-tokens"]').click(), 1000);
+        fetch(`${BACKEND_URL}/api/book-slot`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bookingPayload)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Slot booking server exception rule fired.");
+            return res.json();
+        })
+        .then(receipt => {
+            if (receipt.success) {
+                SmartPilgrimApp.showToastNotification("Pass Allocated Successfully!");
+                SmartPilgrimApp.renderDigitalPassUi(receipt.pass);
+            } else {
+                alert(`Booking Denied: ${receipt.message}`);
             }
-        } catch (err) {
-            this.showNotificationToast("Critical Connection Interface Fault.");
-        }
+        })
+        .catch(err => console.error("Error committing reservation slot package arrays:", err));
     },
 
-    showNotificationToast: function(msg) {
-        const t = document.getElementById('app-toast'); t.innerText = msg; t.classList.add('visible');
-        setTimeout(() => t.classList.remove('visible'), 3000);
+    renderDigitalPassUi: (pass) => {
+        const fallback = document.getElementById("no-tickets-fallback");
+        const container = document.getElementById("ticket-pass-container");
+        
+        const tktTempleName = document.getElementById("tkt-temple-name");
+        const tktUid = document.getElementById("tkt-uid");
+        const tktWindow = document.getElementById("tkt-window");
+        const tktTokenString = document.getElementById("tkt-token-string");
+
+        if (tktTempleName) tktTempleName.innerText = selectedTempleObject.name;
+        if (tktUid) tktUid.innerText = "[Identity Key Verified]"; // Displaying generic placeholder string maps
+        if (tktWindow) tktWindow.innerText = `${pass.date} (${pass.timeSlot.split(' ')[0]})`;
+        if (tktTokenString) tktTokenString.innerText = `TOKEN_ID: ${pass.tokenId}`;
+
+        if (fallback) fallback.classList.add("hidden");
+        if (container) container.classList.remove("hidden");
+    },
+
+    // ==========================================
+    // UTILITY LAYOUT AND NAVIGATION SYSTEMS
+    // ==========================================
+    setupTabNavigation: () => {
+        const menuItems = document.querySelectorAll(".menu-item");
+        const panels = document.querySelectorAll(".tab-panel");
+
+        menuItems.forEach(item => {
+            item.addEventListener("click", () => {
+                const targetTab = item.getAttribute("data-tab");
+
+                menuItems.forEach(i => i.classList.remove("active"));
+                panels.forEach(p => p.classList.remove("active"));
+
+                item.classList.add("active");
+                const targetPanel = document.getElementById(targetTab);
+                if (targetPanel) targetPanel.classList.add("active");
+            });
+        });
+    },
+
+    showToastNotification: (msg) => {
+        const toast = document.getElementById("app-toast");
+        if (toast) {
+            toast.innerText = msg;
+            toast.style.opacity = "1";
+            setTimeout(() => {
+                toast.style.opacity = "0";
+            }, 3000);
+        }
     }
 };
