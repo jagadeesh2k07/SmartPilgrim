@@ -6,234 +6,485 @@
     <title>SmartPilgrim - Unified Devotional Engine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sacred-emblem"><i class="fa-solid fa-gopuram"></i></div>
-                <div class="brand-titles">
-                    <h2>SmartPilgrim</h2>
-                    <span>ALL-INDIA DEVOSTHANAM HUB</span>
-                </div>
-            </div>
-            
-            <nav class="sidebar-menu">
-                <ul>
-                    <li class="menu-item active" data-tab="live-status">
-                        <a href="#live"><i class="fa-solid fa-chart-line"></i> Live Metrics Hub</a>
-                    </li>
-                    <li class="menu-item" data-tab="slot-booking">
-                        <a href="#book"><i class="fa-solid fa-ticket"></i> Darshan & Pooja Slots</a>
-                    </li>
-                    <li class="menu-item" data-tab="my-tokens">
-                        <a href="#tokens"><i class="fa-solid fa-qrcode"></i> Digital Pilgrimage Passes</a>
-                    </li>
-                    <li class="menu-item" data-tab="travel-advisory">
-                        <a href="#advisory"><i class="fa-solid fa-shield-halved"></i> Temple Custom Guidelines</a>
-                    </li>
-                </ul>
-            </nav>
+<div class="app-container">
 
-            <div class="sidebar-footer">
-                <span class="indicator-glow green"></span>
-                <p>Central Cloud Sync Active</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sacred-emblem"><i class="fa-solid fa-gopuram"></i></div>
+            <div class="brand-titles">
+                <h2>SmartPilgrim</h2>
+                <span>ALL-INDIA DEVOSTHANAM HUB</span>
             </div>
-        </aside>
+            <button class="sidebar-close-btn" id="sidebarCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
 
-        <main class="main-viewport">
-            <header class="topbar">
-                
+        <div class="current-temple-chip" id="sidebar-temple-chip">
+            <i class="fa-solid fa-location-dot"></i>
+            <span id="sidebar-temple-name">No Temple Selected</span>
+        </div>
+
+        <nav class="sidebar-menu">
+            <ul>
+                <li class="menu-item active" data-tab="live-status">
+                    <a href="#live"><i class="fa-solid fa-chart-line"></i> Live Metrics Hub</a>
+                </li>
+                <li class="menu-item" data-tab="slot-booking">
+                    <a href="#book"><i class="fa-solid fa-ticket"></i> Darshan & Pooja Slots</a>
+                </li>
+                <li class="menu-item" data-tab="my-tokens">
+                    <a href="#tokens"><i class="fa-solid fa-qrcode"></i> Digital Passes
+                        <span class="pass-count-badge hidden" id="pass-count-badge">0</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-tab="travel-advisory">
+                    <a href="#advisory"><i class="fa-solid fa-shield-halved"></i> Temple Guidelines</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span class="indicator-glow green pulse"></span>
+            <p>Central Cloud Sync Active</p>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-viewport">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger-btn" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></button>
+
                 <div class="global-search-container">
-                    <div class="search-input-frame">
-                        <i class="fa-solid fa-magnifying-glass main-search-icon"></i>
-                        <input type="text" id="global-temple-search" placeholder="Search 100+ Holy Shrines across India..." onfocus="SmartPilgrimApp.showSearchDropdown()" onblur="SmartPilgrimApp.hideSearchDropdown()" onkeyup="SmartPilgrimApp.processSearchQuery()">
+                    <div class="search-input-frame" onclick="SmartPilgrimApp.showSearchDropdown()">
+                        <i class="fa-solid fa-gopuram main-search-icon"></i>
+                        <input type="text" id="global-temple-search"
+                            placeholder="Search temples across India..."
+                            onfocus="SmartPilgrimApp.showSearchDropdown()"
+                            onkeyup="SmartPilgrimApp.processSearchQuery()"
+                            autocomplete="off">
+                        <span class="search-clear hidden" id="search-clear" onclick="SmartPilgrimApp.clearSearch()"><i class="fa-solid fa-xmark"></i></span>
+                        <span class="search-kbd">⌘K</span>
                     </div>
-                    
-                    <div class="search-dropdown hidden" id="search-dropdown-menu">
-                        <div class="dropdown-header" id="dropdown-menu-title">20 Famous Indian Temples (Quick Menu)</div>
-                        <div class="dropdown-scroll-stack" id="dropdown-results-container">
+
+                    <!-- ADVANCED SEARCH PANEL -->
+                    <div class="search-panel hidden" id="search-dropdown-menu">
+                        <button class="sp-panel-close" onclick="SmartPilgrimApp.forceCloseSearch()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                        <div id="search-results-view" class="hidden">
+                            <div class="sp-section-label" id="search-result-label">Results</div>
+                            <div class="sp-results-list" id="dropdown-results-container"></div>
+                        </div>
+
+                        <div id="search-browse-view">
+                            <div class="sp-top-row">
+                                <button class="sp-detect-btn" onclick="SmartPilgrimApp.detectLocation()">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Detect my state
+                                </button>
+                                <div class="sp-state-tabs" id="sp-state-tabs"></div>
+                            </div>
+                            <div class="sp-popular-label">Popular Temples</div>
+                            <div class="sp-temple-grid" id="sp-temple-grid"></div>
+                            <button class="sp-view-all-btn" id="sp-view-all-btn" onclick="SmartPilgrimApp.viewAllTemples()">
+                                View All Temples <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="profile-cluster">
-                    <div class="notification-bell"><i class="fa-solid fa-bell"></i><span class="badge"></span></div>
-                    <div class="user-info">
-                        <div class="user-avatar">J</div>
-                        <span>Jagadeesh</span>
+            <div class="profile-cluster">
+                <div class="notification-bell" id="notif-bell" onclick="SmartPilgrimApp.showNotifications()">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge hidden" id="notif-badge"></span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">J</div>
+                    <div class="user-details">
+                        <span class="user-name">Jagadeesh</span>
+                        <span class="user-role">Pilgrim</span>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <div class="scrollable-content">
-                
-                <div class="system-announcement">
-                    <i class="fa-solid fa-circle-exclamation amber-text"></i>
-                    <marquee behavior="scroll" direction="left" id="live-ticker-banner">Select a temple to display active real-time ticker data streams...</marquee>
+        <!-- TICKER -->
+        <div class="system-announcement">
+            <i class="fa-solid fa-circle-exclamation amber-text"></i>
+            <marquee behavior="scroll" direction="left" scrollamount="4" id="live-ticker-banner">
+                Select a temple to display active real-time ticker data streams...
+            </marquee>
+        </div>
+
+        <div class="scrollable-content">
+
+            <!-- TAB: LIVE STATUS -->
+            <section id="live-status" class="tab-panel active">
+
+                <!-- SHOWN BEFORE A TEMPLE IS SELECTED -->
+                <div id="no-temple-state" class="welcome-empty-state">
+                    <div class="welcome-icon"><i class="fa-solid fa-gopuram"></i></div>
+                    <h2>Welcome to SmartPilgrim</h2>
+                    <p>
+                        SmartPilgrim was built to make temple visits simple and stress-free — especially
+                        for pilgrims travelling from rural areas who may not have easy access to
+                        on-site counters, local guides, or real-time updates. No more travelling long
+                        distances only to find long queues or closed gates.
+                    </p>
+                    <div class="welcome-features">
+                        <div class="welcome-feature">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <h4>Live Crowd Data</h4>
+                            <p>See real-time footfall and zone density before you travel.</p>
+                        </div>
+                        <div class="welcome-feature">
+                            <i class="fa-solid fa-ticket"></i>
+                            <h4>Easy Slot Booking</h4>
+                            <p>Reserve darshan slots in advance — no waiting in line.</p>
+                        </div>
+                        <div class="welcome-feature">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <h4>Digital Pass</h4>
+                            <p>Get a scannable pass — no printing or paperwork needed.</p>
+                        </div>
+                        <div class="welcome-feature">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <h4>Clear Guidelines</h4>
+                            <p>Know dress codes & rules for every temple, in advance.</p>
+                        </div>
+                    </div>
+                    <button class="welcome-cta-btn" onclick="SmartPilgrimApp.focusSearch()">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search & Select a Temple to Begin
+                    </button>
                 </div>
 
-                <section id="live-status" class="tab-panel active">
+                <!-- SHOWN AFTER A TEMPLE IS SELECTED -->
+                <div id="live-dashboard-content" class="hidden">
                     <div class="dashboard-banner">
-                        <span class="banner-tag" id="display-temple-state">Andhra Pradesh</span>
-                        <h1 id="display-temple-title">Tirumala Venkateswara Temple</h1>
-                        <p id="display-temple-desc">Verify live tracking infrastructure index counters, AI crowd density analysis formulas, and queue line wait configurations metrics immediately.</p>
+                        <div class="banner-left">
+                            <span class="banner-tag" id="display-temple-state">—</span>
+                            <h1 id="display-temple-title">—</h1>
+                            <p id="display-temple-desc">Live tracking, AI crowd density analysis, and queue configurations updated in real-time.</p>
+                            <div class="banner-actions">
+                                <button class="btn-banner" onclick="SmartPilgrimApp.goToBooking()">
+                                    <i class="fa-solid fa-ticket"></i> Book Darshan Slot
+                                </button>
+                                <button class="btn-banner outline" onclick="SmartPilgrimApp.goToAdvisory()">
+                                    <i class="fa-solid fa-circle-info"></i> View Guidelines
+                                </button>
+                            </div>
+                        </div>
+                        <div class="banner-right">
+                            <div class="live-indicator">
+                                <span class="live-dot"></span>
+                                <span>LIVE</span>
+                            </div>
+                            <div class="last-updated">Updated <span id="last-updated-time">just now</span></div>
+                        </div>
                     </div>
 
                     <div class="metrics-grid">
-                        <div class="stat-card">
-                            <div class="card-top"><span>Live Active Footfall</span><div class="icon-frame red"><i class="fa-solid fa-users"></i></div></div>
+                        <div class="stat-card" id="card-crowd">
+                            <div class="card-top">
+                                <span>Pilgrims Present Right Now</span>
+                                <div class="icon-frame red"><i class="fa-solid fa-users"></i></div>
+                            </div>
                             <div class="card-bottom">
-                                <h2 id="live-crowd-count">--</h2>
-                                <p class="status-pill state-heavy" id="crowd-badge">Analysis Pending</p>
+                                <h2 id="live-crowd-count"><span class="loading-shimmer">Loading...</span></h2>
+                                <p class="status-pill state-heavy" id="crowd-badge">Fetching Data</p>
                             </div>
                         </div>
 
-                        <div class="stat-card">
-                            <div class="card-top"><span>Estimated Darshan Queue Wait</span><div class="icon-frame orange"><i class="fa-solid fa-hourglass-half"></i></div></div>
+                        <div class="stat-card" id="card-wait">
+                            <div class="card-top">
+                                <span>Estimated Queue Wait</span>
+                                <div class="icon-frame orange"><i class="fa-solid fa-hourglass-half"></i></div>
+                            </div>
                             <div class="card-bottom">
-                                <h2 id="live-wait-time">--</h2>
+                                <h2 id="live-wait-time"><span class="loading-shimmer">Loading...</span></h2>
                                 <p class="status-pill state-moving">Dynamically Calculated</p>
                             </div>
                         </div>
 
-                        <div class="stat-card">
-                            <div class="card-top"><span>Token Counters Activity</span><div class="icon-frame green"><i class="fa-solid fa-network-wired"></i></div></div>
+                        <div class="stat-card" id="card-gates">
+                            <div class="card-top">
+                                <span>Gate Status</span>
+                                <div class="icon-frame green"><i class="fa-solid fa-network-wired"></i></div>
+                            </div>
                             <div class="card-bottom">
                                 <h2 id="live-token-processing">Normal Flow</h2>
                                 <p class="status-text"><i class="fa-solid fa-check-double"></i> All Gates Operational</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" id="card-slots">
+                            <div class="card-top">
+                                <span>Morning Slots Available</span>
+                                <div class="icon-frame green"><i class="fa-solid fa-calendar-check"></i></div>
+                            </div>
+                            <div class="card-bottom">
+                                <h2 id="live-morning-slots"><span class="loading-shimmer">--</span></h2>
+                                <p class="status-text"><i class="fa-solid fa-sun"></i> Today's Quota</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="density-panel">
                         <div class="panel-title">
-                            <h3>Zone Cluster Saturation Indicators</h3>
-                            <p>Telemetry processing from edge automation modules tracking inner and outer prakarams</p>
+                            <div>
+                                <h3>Zone Saturation Indicators</h3>
+                                <p>Live telemetry from inner and outer prakarams</p>
+                            </div>
+                            <div class="crowd-alert-badge hidden" id="crowd-alert">
+                                <i class="fa-solid fa-triangle-exclamation"></i> High Density Alert
+                            </div>
                         </div>
                         <div class="zone-bars-stack">
                             <div class="zone-row">
-                                <div class="zone-labels"><span>Main Entry Checkpoint Matrix</span><strong id="bar-val-1">--%</strong></div>
-                                <div class="bar-bg"><div class="bar-fill bg-danger" id="bar-fill-1" style="width: 0%;"></div></div>
+                                <div class="zone-labels">
+                                    <span><i class="fa-solid fa-door-open"></i> Main Entry Checkpoint</span>
+                                    <strong id="bar-val-1">--%</strong>
+                                </div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill bg-danger" id="bar-fill-1" style="width:0%"></div>
+                                </div>
+                                <div class="zone-status" id="zone-status-1">Calculating...</div>
                             </div>
                             <div class="zone-row">
-                                <div class="zone-labels"><span>Inner Core Sanctorum (Garbhagriha Perimeter)</span><strong id="bar-val-2">--%</strong></div>
-                                <div class="bar-bg"><div class="bar-fill bg-success" id="bar-fill-2" style="width: 0%;"></div></div>
+                                <div class="zone-labels">
+                                    <span><i class="fa-solid fa-om"></i> Inner Sanctorum (Garbhagriha)</span>
+                                    <strong id="bar-val-2">--%</strong>
+                                </div>
+                                <div class="bar-bg">
+                                    <div class="bar-fill bg-success" id="bar-fill-2" style="width:0%"></div>
+                                </div>
+                                <div class="zone-status" id="zone-status-2">Calculating...</div>
                             </div>
                         </div>
                     </div>
-                </section>
 
-                <section id="slot-booking" class="tab-panel">
-                    <div class="section-heading">
-                        <h2>Secure Pass Allocation Engine (<span id="display-booking-price">₹300</span>)</h2>
-                        <p>Select your desired date block and reservation window down below. Server values refresh instantly.</p>
-                    </div>
-
-                    <div class="booking-flow-grid">
-                        <div class="booking-form-box">
-                            <h3>1. Select Date Calendar</h3>
-                            <div class="calendar-mock">
-                                <div class="calendar-day disabled">28<br><small>Full</small></div>
-                                <div class="calendar-day disabled">29<br><small>Full</small></div>
-                                <div class="calendar-day active" onclick="SmartPilgrimApp.selectBookingDate(30)">30<br><small class="text-green">Available</small></div>
-                                <div class="calendar-day" onclick="SmartPilgrimApp.selectBookingDate(1)">01<br><small class="text-green">Available</small></div>
-                                <div class="calendar-day" onclick="SmartPilgrimApp.selectBookingDate(2)">02<br><small class="text-orange">Limited</small></div>
+                    <!-- QUICK STATS ROW -->
+                    <div class="quick-stats-row">
+                        <div class="quick-stat">
+                            <i class="fa-solid fa-rupee-sign"></i>
+                            <div>
+                                <span>Entry Fee</span>
+                                <strong id="qs-price">--</strong>
                             </div>
+                        </div>
+                        <div class="quick-stat">
+                            <i class="fa-solid fa-map-pin"></i>
+                            <div>
+                                <span>State</span>
+                                <strong id="qs-state">--</strong>
+                            </div>
+                        </div>
+                        <div class="quick-stat">
+                            <i class="fa-solid fa-clock"></i>
+                            <div>
+                                <span>Temple Hours</span>
+                                <strong>5:00 AM – 10:00 PM</strong>
+                            </div>
+                        </div>
+                        <div class="quick-stat">
+                            <i class="fa-solid fa-ticket"></i>
+                            <div>
+                                <span>Afternoon Slots</span>
+                                <strong id="qs-afternoon">--</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                            <h3 class="margin-top-md">2. Select Your Time Window</h3>
+            <!-- TAB: SLOT BOOKING -->
+            <section id="slot-booking" class="tab-panel">
+                <div class="section-heading">
+                    <h2>Book Your Darshan Slot</h2>
+                    <p>Secure your visit time in advance. Entry fee: <strong class="gold-text" id="display-booking-price">--</strong></p>
+                </div>
+
+                <div class="booking-flow-grid">
+                    <div class="booking-form-box">
+                        <div class="form-step">
+                            <div class="step-label"><span class="step-num">1</span> Choose Date</div>
+                            <div class="calendar-mock" id="calendar-grid">
+                                <div class="calendar-day disabled" data-day="28">
+                                    28<br><small>Full</small>
+                                </div>
+                                <div class="calendar-day disabled" data-day="29">
+                                    29<br><small>Full</small>
+                                </div>
+                                <div class="calendar-day active" data-day="30" onclick="SmartPilgrimApp.selectBookingDate(this, 30, 'July')">
+                                    30<br><small class="text-green">Open</small>
+                                </div>
+                                <div class="calendar-day" data-day="1" onclick="SmartPilgrimApp.selectBookingDate(this, 1, 'Aug')">
+                                    01<br><small class="text-green">Open</small>
+                                </div>
+                                <div class="calendar-day" data-day="2" onclick="SmartPilgrimApp.selectBookingDate(this, 2, 'Aug')">
+                                    02<br><small class="text-orange">Few Left</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-step">
+                            <div class="step-label"><span class="step-num">2</span> Choose Time Slot</div>
                             <div class="time-slots-grid">
-                                <div class="slot-tile selected" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Morning Quota (06:00 AM - 12:00 PM)')">
-                                    <span>Morning Session</span><h4>06:00 AM</h4><p id="quota-s1">-- Slots Left</p>
+                                <div class="slot-tile selected" id="slot-morning" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Morning Quota (06:00 AM – 12:00 PM)')">
+                                    <span>Morning Session</span>
+                                    <h4>06:00 AM</h4>
+                                    <p id="quota-s1"><span class="loading-shimmer">-- Slots</span></p>
                                 </div>
-                                <div class="slot-tile" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Afternoon Quota (12:00 PM - 06:00 PM)')">
-                                    <span>Afternoon Session</span><h4>12:00 PM</h4><p id="quota-s2">-- Slots Left</p>
+                                <div class="slot-tile" id="slot-afternoon" onclick="SmartPilgrimApp.selectTimeSlot(this, 'Afternoon Quota (12:00 PM – 06:00 PM)')">
+                                    <span>Afternoon Session</span>
+                                    <h4>12:00 PM</h4>
+                                    <p id="quota-s2"><span class="loading-shimmer">-- Slots</span></p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="checkout-sidebar">
-                            <h3>Booking Parameters Verified</h3>
-                            <div class="checkout-card">
-                                <div class="receipt-row"><span>Target Shrine:</span><strong id="receipt-temple">Tirumala</strong></div>
-                                <div class="receipt-row"><span>Selected Target Date:</span><strong id="receipt-date">30th July 2026</strong></div>
-                                <div class="receipt-row"><span>Time Window Band:</span><strong id="receipt-time">Morning Quota</strong></div>
-                                <div class="receipt-row"><span>Gate Charge Toll:</span><strong class="gold-text" id="receipt-price">₹300.00</strong></div>
-                                
-                                <div class="pilgrim-input-field">
-                                    <label for="pilgrim-id">Primary Pilgrim Aadhaar Identifier Key:</label>
-                                    <input type="text" id="pilgrim-id" placeholder="Ex: 4520 8921 4410" maxlength="14">
-                                </div>
-                                <button class="btn btn-primary-gold" onclick="SmartPilgrimApp.executeLiveServerBooking()"><i class="fa-solid fa-shield-gold"></i> Complete Core Registration</button>
+                        <div class="form-step">
+                            <div class="step-label"><span class="step-num">3</span> Pilgrim Details</div>
+                            <div class="pilgrim-input-field">
+                                <label for="pilgrim-name">Full Name</label>
+                                <input type="text" id="pilgrim-name" placeholder="Enter your full name" autocomplete="name">
+                            </div>
+                            <div class="pilgrim-input-field">
+                                <label for="pilgrim-id">Aadhaar Number <span class="req">*</span></label>
+                                <input type="text" id="pilgrim-id" placeholder="XXXX XXXX XXXX" maxlength="14"
+                                    oninput="SmartPilgrimApp.formatAadhaar(this)">
+                                <span class="field-hint" id="aadhaar-hint">Enter 12-digit Aadhaar number</span>
                             </div>
                         </div>
                     </div>
-                </section>
 
-                <section id="my-tokens" class="tab-panel">
-                    <div class="section-heading">
-                        <h2>Cryptographic Verification Passes</h2>
-                        <p>Present this live system pass to security enforcement terminals upon arriving at access lanes.</p>
-                    </div>
-                    <div id="no-tickets-fallback" class="empty-state-card">
-                        <i class="fa-solid fa-qrcode"></i>
-                        <h3>No Active Passes Compiled Currently</h3>
-                        <p>Please select a temple destination from the directory tree database and execute a booking pass sequence.</p>
-                    </div>
-                    <div id="ticket-pass-container" class="digital-ticket-container hidden">
-                        <div class="ticket-wrapper">
-                            <div class="ticket-left">
-                                <div class="ticket-badge" id="tkt-badge-title">VIP ACCESS TICKET</div>
-                                <h3 id="tkt-temple-name">Sri Venkateswara Divine Shrine</h3>
-                                <div class="ticket-meta-grid">
-                                    <div class="meta-item"><span>Registered Pilgrim</span><strong>Jagadeesh Prasad</strong></div>
-                                    <div class="meta-item"><span>Identity Verification Checksum</span><strong id="tkt-uid">--</strong></div>
-                                    <div class="meta-item"><span>Scheduled Gate Timing</span><strong id="tkt-window">--</strong></div>
-                                    <div class="meta-item"><span>Terminal Checkpoint Array</span><strong>System Authorized Gate 3A</strong></div>
-                                </div>
+                    <div class="checkout-sidebar">
+                        <h3><i class="fa-solid fa-receipt"></i> Booking Summary</h3>
+                        <div class="checkout-card">
+                            <div class="receipt-row">
+                                <span>Temple</span>
+                                <strong id="receipt-temple">--</strong>
                             </div>
-                            <div class="ticket-right">
-                                <div class="qr-box-mock"><div class="qr-scanner-lines"><i class="fa-solid fa-qrcode"></i></div><span>TOKEN SECURE</span></div>
-                                <p class="token-id-str" id="tkt-token-string">TOKEN_ID: PENDING</p>
+                            <div class="receipt-row">
+                                <span>Date</span>
+                                <strong id="receipt-date">30 July 2026</strong>
+                            </div>
+                            <div class="receipt-row">
+                                <span>Time Window</span>
+                                <strong id="receipt-time">Morning Quota</strong>
+                            </div>
+                            <div class="receipt-divider"></div>
+                            <div class="receipt-row total-row">
+                                <span>Total Fee</span>
+                                <strong class="gold-text" id="receipt-price">--</strong>
                             </div>
                         </div>
-                    </div>
-                </section>
 
-                <section id="travel-advisory" class="tab-panel">
-                    <div class="section-heading">
-                        <h2>Customized Local Shrine Travel Directives</h2>
-                        <p>Failure to meet these compliance checks will result in immediate entry denial at checkpoint gates.</p>
+                        <button class="btn btn-primary-gold" id="book-btn" onclick="SmartPilgrimApp.executeLiveServerBooking()">
+                            <i class="fa-solid fa-shield-check"></i> Confirm & Generate Pass
+                        </button>
+                        <p class="secure-note"><i class="fa-solid fa-lock"></i> Secured with 256-bit encryption</p>
                     </div>
-                    <div class="advisory-grid">
-                        <div class="advisory-card">
-                            <div class="advisory-icon"><i class="fa-solid fa-shirt"></i></div>
-                            <h3>Dress Enforcement Standard</h3>
-                            <p id="adv-dress">Traditional Indian attire is mandatory. Gents must wear dhotis or pyjamas; sarees or chudidars with dupatta for ladies.</p>
-                        </div>
-                        <div class="advisory-card">
-                            <div class="advisory-icon"><i class="fa-solid fa-ban"></i></div>
-                            <h3>Forbidden Electronic Materials</h3>
-                            <p>Mobile recording instruments, electronic wearables, cameras, and memory drives are banned beyond outer checkpoints. Free biometric lockers are available outside.</p>
-                        </div>
-                        <div class="advisory-card">
-                            <div class="advisory-icon"><i class="fa-solid fa-id-card"></i></div>
-                            <h3>Mandatory On-Site Documents</h3>
-                            <p>The original physical Aadhaar ID matching your booking token checksum must be brought. Phone digital copies are rejected inside security bays.</p>
-                        </div>
-                    </div>
-                </section>
+                </div>
+            </section>
 
-            </div>
-        </main>
+            <!-- TAB: MY TOKENS -->
+            <section id="my-tokens" class="tab-panel">
+                <div class="section-heading">
+                    <h2>Your Digital Pilgrimage Passes</h2>
+                    <p>Present this pass at security terminals. Screenshot or download for offline use.</p>
+                </div>
+
+                <div id="no-tickets-fallback" class="empty-state-card">
+                    <div class="empty-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <h3>No Passes Yet</h3>
+                    <p>Book a darshan slot to generate your digital pass.</p>
+                    <button class="btn btn-primary-gold empty-cta" onclick="SmartPilgrimApp.goToBooking()">
+                        <i class="fa-solid fa-ticket"></i> Book a Slot Now
+                    </button>
+                </div>
+
+                <div id="ticket-pass-container" class="digital-ticket-container hidden"></div>
+            </section>
+
+            <!-- TAB: ADVISORY -->
+            <section id="travel-advisory" class="tab-panel">
+                <div class="section-heading">
+                    <h2>Temple Guidelines</h2>
+                    <p>Non-compliance will result in entry denial at checkpoint gates.</p>
+                </div>
+
+                <div class="temple-info-banner" id="advisory-temple-banner">
+                    <i class="fa-solid fa-gopuram"></i>
+                    <div>
+                        <h3 id="advisory-temple-name">--</h3>
+                        <span id="advisory-temple-state">--</span>
+                    </div>
+                </div>
+
+                <div class="advisory-grid">
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-shirt"></i></div>
+                        <h3>Dress Code</h3>
+                        <p id="adv-dress">Traditional Indian attire is mandatory. Gents must wear dhotis or pyjamas; sarees or chudidars with dupatta for ladies.</p>
+                    </div>
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-ban"></i></div>
+                        <h3>Prohibited Items</h3>
+                        <p>Mobile phones, cameras, electronic wearables, and memory devices are banned beyond outer checkpoints. Free lockers are available outside.</p>
+                    </div>
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-id-card"></i></div>
+                        <h3>Required Documents</h3>
+                        <p>Original physical Aadhaar card matching your booking token must be carried. Digital copies are not accepted inside security bays.</p>
+                    </div>
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <h3>Code of Conduct</h3>
+                        <p>Maintain silence inside sanctum. Follow queue discipline. Avoid carrying food items. Respect the sacred space and fellow pilgrims.</p>
+                    </div>
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-utensils"></i></div>
+                        <h3>Prasadam & Food</h3>
+                        <p>Free prasadam is distributed at designated counters. Outside food and beverages are not permitted inside the temple premises.</p>
+                    </div>
+                    <div class="advisory-card">
+                        <div class="advisory-icon"><i class="fa-solid fa-wheelchair"></i></div>
+                        <h3>Accessibility</h3>
+                        <p>Wheelchair assistance available at main entry. Separate queues for elderly, differently-abled, and families with infants.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- OVERLAY for mobile sidebar -->
+<div class="sidebar-overlay hidden" id="sidebarOverlay" onclick="SmartPilgrimApp.closeSidebar()"></div>
+
+<!-- BOOKING LOADING OVERLAY -->
+<div class="booking-overlay hidden" id="booking-overlay">
+    <div class="booking-loader">
+        <div class="loader-spinner"></div>
+        <p>Generating your pass...</p>
     </div>
+</div>
 
-    <div class="toast-popup" id="app-toast">Operation Successful</div>
+<!-- TOAST -->
+<div class="toast-popup" id="app-toast">
+    <i class="fa-solid fa-check-circle" id="toast-icon"></i>
+    <span id="toast-msg">Operation Successful</span>
+</div>
 
-</body>
 <script src="script.js"></script>
+</body>
 </html>
