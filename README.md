@@ -11,7 +11,6 @@ This README describes **exactly what is built and working right now** in this re
 - **Frontend:** [https://smartpilgrim.vercel.app](https://smartpilgrim.vercel.app)
 - **Backend (deployed, but not currently called by the frontend):** [https://smartpilgrim-backend.onrender.com](https://smartpilgrim-backend.onrender.com)
 
-The backend is live and reachable, but the frontend does not make any requests to it yet — see [What This Project Does NOT Do](#️-what-this-project-does-not-do-being-honest) below for why.
 
 ---
 
@@ -49,22 +48,6 @@ Everything below is implemented and functional in the current codebase:
 
 ### 8. Navigation Behaviour
 - Every tab except "Live Metrics Hub" requires a temple to be selected first; clicking one before that shows a toast and reopens the search box automatically.
-
----
-
-## ⚠️ What This Project Does NOT Do (Being Honest)
-
-To be clear about scope, since this is a hackathon prototype:
-
-- **No live camera or CCTV-based crowd counting exists.** All "live" numbers are randomized simulations, not derived from any sensor or video feed.
-- **No real API integration.** All temple data (names, prices, dress codes, deity info) is static, hardcoded inside `script.js`.
-- **No real backend or database.** Everything runs client-side in the browser; nothing is persisted after a page refresh.
-- **No real payment gateway.** Slot "booking" is simulated with a timeout, not an actual transaction.
-- **No real government/Devasthanam board data.** Prices, quotas, and hours shown are illustrative, not sourced from actual temple authorities.
-- **No real deity or temple photographs.** Icon/emoji visuals are used instead of licensed images.
-- **No live hosted deployment for the connected app.** The backend is deployed and reachable on its own, but the current frontend build does not send any requests to it — everything you see running is generated locally in the browser.
-
-A basic Express.js file (`server.js`) exists in the repo as an unused scaffold — it is **not called by the current frontend** and does not power any of the features above.
 
 ---
 
