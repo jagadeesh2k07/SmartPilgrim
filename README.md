@@ -9,6 +9,7 @@ Experience the live application deployment endpoints across the core infrastruct
 
 * **Frontend Interface (Vercel):** [https://smartpilgrim.vercel.app](https://smartpilgrim.vercel.app)
 * **Backend Cloud Gateway (Render):** [https://smartpilgrim-backend.onrender.com](https://smartpilgrim-backend.onrender.com)
+---
 
 ## ✨ Features
 
