@@ -2,7 +2,7 @@
 
 **SmartPilgrim** is a temple visit management web app prototype built for **Smart India Hackathon 2025**. It brings live crowd information, darshan slot booking, digital passes, deity/temple background, and temple guidelines into a single dashboard — designed especially for pilgrims travelling from rural areas who may not have easy access to on-site counters, local guides, or real-time updates.
 
-This README describes **exactly what is built and working right now** in this repository — not a roadmap dressed up as a finished product.
+This README describes **exactly what is built and working right now** in this repository — not a roadmap dressed up as a finished the  product.
 
 ---
 
